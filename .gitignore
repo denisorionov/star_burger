@@ -1,0 +1,6 @@
+bundles/**
+db.sqlite3
+.cache
+node_modules/
+media/
+.idea/
