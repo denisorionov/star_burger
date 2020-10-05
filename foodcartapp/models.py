@@ -67,28 +67,28 @@ class RestaurantMenuItem(models.Model):
         ]
 
 
-class Customer(models.Model):
+class Order(models.Model):
     firstname = models.CharField('имя', max_length=50)
     lastname = models.CharField('фамилия', max_length=50, blank=True)
-    phone_number = PhoneNumberField('телефон')
-
-    def __str__(self):
-        return f"{self.firstname} {self.lastname}"
-
-    class Meta:
-        verbose_name = 'покупатель'
-        verbose_name_plural = 'покупатели'
-
-
-class Order(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='orders')
     address = models.CharField('адрес доставки', max_length=100)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='order_items', verbose_name='товар')
-    quantity = models.IntegerField('количество')
+    phonenumber = PhoneNumberField('телефон')
 
     def __str__(self):
-        return f"{self.customer.firstname} {self.customer.lastname} {self.address}"
+        return f"{self.firstname} {self.lastname} {self.address}"
 
     class Meta:
         verbose_name = 'заказ'
         verbose_name_plural = 'заказы'
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='products', verbose_name='заказ')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='products', verbose_name='товар')
+    quantity = models.IntegerField('количество')
+
+    def __str__(self):
+        return f"{self.order.firstname} {self.order.lastname} {self.order.address}"
+
+    class Meta:
+        verbose_name = 'состав заказа'
+        verbose_name_plural = 'состав заказа'
