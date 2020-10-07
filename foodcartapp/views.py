@@ -71,15 +71,26 @@ def register_order_api(request):
 
     elif request.method == 'POST':
         order = request.data
-        customer, created = Order.objects.get_or_create(
-            firstname=order['firstname'], lastname=order['lastname'], phonenumber=order['phonenumber'],
-            address=order['address'])
+        serializer = OrderSerializer(data=request.data)
 
-        for product in order['products']:
-            OrderItem.objects.create(order=customer,
-                                     product=Product.objects.get(id=product['product']), quantity=product['quantity'])
-        serializer = OrderSerializer(instance=customer)
-        #if serializer.is_valid():
-            #serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-        #return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            if not order['products']:
+                content = {"products": ["Это поле не может быть пустым."]}
+                return Response(content, status=status.HTTP_404_NOT_FOUND)
+        except KeyError:
+            content = {"products": ["Это поле обязательно."]}
+            return Response(content, status=status.HTTP_404_NOT_FOUND)
+
+        if serializer.is_valid():
+            customer, created = Order.objects.get_or_create(
+                firstname=order['firstname'], lastname=order['lastname'], phonenumber=order['phonenumber'],
+                address=order['address'])
+
+            for product in order['products']:
+                OrderItem.objects.create(order=customer,
+                                         product=Product.objects.get(id=product['product']),
+                                         quantity=product['quantity'])
+            serializer = OrderSerializer(instance=customer)
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
