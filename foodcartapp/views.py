@@ -2,8 +2,12 @@ import json
 
 from django.http import JsonResponse
 from django.templatetags.static import static
+from rest_framework import viewsets, permissions, status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
-from .models import Product, Order, Customer
+from .models import Product, Order, OrderItem
+from .serializers import OrderSerializer
 
 
 def banners_list_api(request):
@@ -58,15 +62,24 @@ def product_list_api(request):
     })
 
 
-def register_order(request):
-    order = json.loads(request.body.decode())
+@api_view(['GET', 'POST'])
+def register_order_api(request):
+    if request.method == 'GET':
+        order = Order.objects.all()
+        serializer_order = OrderSerializer(order, many=True)
+        return Response(serializer_order.data)
 
-    customer, created = Customer.objects.get_or_create(
-        firstname=order['firstname'], lastname=order['lastname'], phone_number=order['phonenumber'])
+    elif request.method == 'POST':
+        order = request.data
+        customer, created = Order.objects.get_or_create(
+            firstname=order['firstname'], lastname=order['lastname'], phonenumber=order['phonenumber'],
+            address=order['address'])
 
-    for product in order['products']:
-        Order.objects.create(customer=customer, address=order['address'],
-                             product=Product.objects.get(id=product['product']), quantity=product['quantity'])
-
-    print(order)
-    return JsonResponse({})
+        for product in order['products']:
+            OrderItem.objects.create(order=customer,
+                                     product=Product.objects.get(id=product['product']), quantity=product['quantity'])
+        serializer = OrderSerializer(instance=customer)
+        #if serializer.is_valid():
+            #serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        #return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

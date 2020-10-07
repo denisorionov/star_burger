@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.shortcuts import reverse
 from django.utils.html import format_html
 
-from .models import Product, Order, Customer
+from .models import Product, Order, OrderItem
 from .models import ProductCategory
 from .models import Restaurant
 from .models import RestaurantMenuItem
@@ -108,13 +108,14 @@ class ProductAdmin(admin.ModelAdmin):
     pass
 
 
-class OrderInline(admin.TabularInline):
-    model = Order
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
     extra = 0
 
 
-@admin.register(Customer)
-class CustomerAdmin(admin.ModelAdmin):
-    inlines = [OrderInline]
-    list_display = ['firstname', 'lastname']
-    list_display_links = ['firstname']
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    inlines = [OrderItemInline]
+    list_display = ['firstname', 'lastname', 'address']
+    list_display_links = ['firstname', 'lastname']
+
