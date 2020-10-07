@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User
 from django.db import models
-from phonenumber_field.modelfields import PhoneNumberField
 
 
 class Restaurant(models.Model):
@@ -71,7 +70,7 @@ class Order(models.Model):
     firstname = models.CharField('имя', max_length=50)
     lastname = models.CharField('фамилия', max_length=50, blank=True)
     address = models.CharField('адрес доставки', max_length=100)
-    phonenumber = PhoneNumberField('телефон')
+    phonenumber = models.CharField('телефон', max_length=12)
 
     def __str__(self):
         return f"{self.firstname} {self.lastname} {self.address}"
