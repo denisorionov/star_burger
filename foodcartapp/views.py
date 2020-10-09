@@ -1,12 +1,10 @@
-import json
-
 from django.http import JsonResponse
 from django.templatetags.static import static
-from rest_framework import viewsets, permissions, status
+from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from .models import Product, Order, OrderItem
+from .models import Product, Order
 from .serializers import OrderSerializer
 
 
@@ -63,34 +61,17 @@ def product_list_api(request):
 
 
 @api_view(['GET', 'POST'])
-def register_order_api(request):
+def register_order(request):
     if request.method == 'GET':
         order = Order.objects.all()
         serializer_order = OrderSerializer(order, many=True)
         return Response(serializer_order.data)
 
     elif request.method == 'POST':
-        order = request.data
         serializer = OrderSerializer(data=request.data)
 
-        try:
-            if not order['products']:
-                content = {"products": ["Это поле не может быть пустым."]}
-                return Response(content, status=status.HTTP_404_NOT_FOUND)
-        except KeyError:
-            content = {"products": ["Это поле обязательно."]}
-            return Response(content, status=status.HTTP_404_NOT_FOUND)
-
         if serializer.is_valid():
-            customer, created = Order.objects.get_or_create(
-                firstname=order['firstname'], lastname=order['lastname'], phonenumber=order['phonenumber'],
-                address=order['address'])
-
-            for product in order['products']:
-                OrderItem.objects.create(order=customer,
-                                         product=Product.objects.get(id=product['product']),
-                                         quantity=product['quantity'])
-            serializer = OrderSerializer(instance=customer)
+            serializer.create(serializer.validated_data)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
