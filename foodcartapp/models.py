@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from django.db import models
 
 
@@ -66,11 +65,22 @@ class RestaurantMenuItem(models.Model):
         ]
 
 
+class OrderManager(models.Manager):
+    def create(self, firstname, lastname, address, phonenumber, products):
+        order, created = Order.objects.get_or_create(firstname=firstname, lastname=lastname, address=address,
+                                                     phonenumber=phonenumber)
+        order_item = [OrderItem(order=order, **fields) for fields in products]
+        OrderItem.objects.bulk_create(order_item)
+
+        return order
+
+
 class Order(models.Model):
     firstname = models.CharField('имя', max_length=50)
     lastname = models.CharField('фамилия', max_length=50, blank=True)
     address = models.CharField('адрес доставки', max_length=100)
     phonenumber = models.CharField('телефон', max_length=12)
+    objects = OrderManager()
 
     def __str__(self):
         return f"{self.firstname} {self.lastname} {self.address}"
@@ -91,4 +101,3 @@ class OrderItem(models.Model):
     class Meta:
         verbose_name = 'состав заказа'
         verbose_name_plural = 'состав заказа'
-
