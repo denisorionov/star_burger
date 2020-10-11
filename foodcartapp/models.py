@@ -66,12 +66,13 @@ class RestaurantMenuItem(models.Model):
 
 
 class OrderManager(models.Manager):
-    def create(self, firstname, lastname, address, phonenumber, products):
-        order, created = Order.objects.get_or_create(firstname=firstname, lastname=lastname, address=address,
-                                                     phonenumber=phonenumber)
+    def create_order(self, firstname, lastname, address, phonenumber, products=False):
+        order = Order.objects.create(firstname=firstname, lastname=lastname, address=address, phonenumber=phonenumber)
         order_item = [OrderItem(order=order, **fields) for fields in products]
         OrderItem.objects.bulk_create(order_item)
-
+        for item in OrderItem.objects.filter(order=order):
+            item.price = item.product.price
+            item.save(update_fields=['price'])
         return order
 
 
@@ -93,6 +94,7 @@ class Order(models.Model):
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='products', verbose_name='заказ')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='products', verbose_name='товар')
+    price = models.CharField('цена позиции', max_length=9)
     quantity = models.IntegerField('количество')
 
     def __str__(self):
