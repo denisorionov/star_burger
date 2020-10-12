@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 
 
 class Restaurant(models.Model):
@@ -66,6 +66,7 @@ class RestaurantMenuItem(models.Model):
 
 
 class OrderManager(models.Manager):
+    @transaction.atomic
     def create_order(self, firstname, lastname, address, phonenumber, products=False):
         order = Order.objects.create(firstname=firstname, lastname=lastname, address=address, phonenumber=phonenumber)
         order_item = [OrderItem(order=order, **fields) for fields in products]
