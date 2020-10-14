@@ -88,7 +88,8 @@ class Order(models.Model):
     lastname = models.CharField('фамилия', max_length=50, blank=True)
     address = models.CharField('адрес доставки', max_length=100)
     phonenumber = models.CharField('телефон', max_length=12)
-    status = models.CharField(max_length=1, default='необработанный', choices=STATUS)
+    status = models.CharField('статус заказа', max_length=1, default='необработанный', choices=STATUS, db_index=True)
+    comment = models.TextField('комментарий к заказу', blank=True)
     objects = OrderManager()
 
     def __str__(self):
