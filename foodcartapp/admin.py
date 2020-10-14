@@ -1,5 +1,6 @@
 from django.contrib import admin
-from django.shortcuts import reverse
+from django.http import HttpResponseRedirect
+from django.shortcuts import reverse, redirect
 from django.utils.html import format_html
 
 from .models import Product, Order, OrderItem
@@ -113,9 +114,12 @@ class OrderItemInline(admin.TabularInline):
     extra = 0
     fields = ['product', 'quantity']
 
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemInline]
     list_display = ['firstname', 'lastname', 'address']
     list_display_links = ['firstname', 'lastname']
 
+    def response_change(self, request, obj):
+        return redirect('/manager/orders/')
