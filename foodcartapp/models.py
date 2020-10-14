@@ -79,10 +79,16 @@ class OrderManager(models.Manager):
 
 
 class Order(models.Model):
+    STATUS = [
+        ('0', 'необработанный'),
+        ('1', 'обработанный')
+    ]
+
     firstname = models.CharField('имя', max_length=50)
     lastname = models.CharField('фамилия', max_length=50, blank=True)
     address = models.CharField('адрес доставки', max_length=100)
     phonenumber = models.CharField('телефон', max_length=12)
+    status = models.CharField(max_length=1, default='необработанный', choices=STATUS)
     objects = OrderManager()
 
     def __str__(self):
