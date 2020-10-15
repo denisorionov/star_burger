@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from django.db import models, transaction
 
 
@@ -90,6 +92,9 @@ class Order(models.Model):
     phonenumber = models.CharField('телефон', max_length=12)
     status = models.CharField('статус заказа', max_length=1, default='необработанный', choices=STATUS, db_index=True)
     comment = models.TextField('комментарий к заказу', blank=True)
+    registration_date = models.DateTimeField('дата регистарции', default=timezone.now, db_index=True)
+    call_date = models.DateTimeField('дата звонка', blank=True, null=True)
+    deliver_date = models.DateTimeField('дата доставки', blank=True, null=True)
     objects = OrderManager()
 
     def __str__(self):
