@@ -86,6 +86,11 @@ class Order(models.Model):
         ('1', 'обработанный')
     ]
 
+    PAYMENT = [
+        ('0', 'электронно'),
+        ('1', 'наличными при получении')
+    ]
+
     firstname = models.CharField('имя', max_length=50)
     lastname = models.CharField('фамилия', max_length=50, blank=True)
     address = models.CharField('адрес доставки', max_length=100)
@@ -95,6 +100,7 @@ class Order(models.Model):
     registration_date = models.DateTimeField('дата регистарции', default=timezone.now, db_index=True)
     call_date = models.DateTimeField('дата звонка', blank=True, null=True)
     deliver_date = models.DateTimeField('дата доставки', blank=True, null=True)
+    payment = models.CharField('вид оплаты', max_length=1, default='электронно', choices=PAYMENT, db_index=True)
     objects = OrderManager()
 
     def __str__(self):
