@@ -101,6 +101,8 @@ class Order(models.Model):
     call_date = models.DateTimeField('дата звонка', blank=True, null=True)
     deliver_date = models.DateTimeField('дата доставки', blank=True, null=True)
     payment = models.CharField('вид оплаты', max_length=1, default='электронно', choices=PAYMENT, db_index=True)
+    restaurant = models.ForeignKey(Restaurant, null=True, blank=True, on_delete=models.SET_NULL,
+                                   related_name='orders', verbose_name='ресторан')
     objects = OrderManager()
 
     def __str__(self):
