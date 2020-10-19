@@ -41,7 +41,7 @@
             {% for order_id, restaurants in order_restaurants.items %}
             {% if order_id == item.id %}
             {% for restaurant in restaurants %}
-            {{ restaurant }}
+            {{ restaurant|first }} - {{ restaurant|last }} км.
             {% endfor %}
             {% endif %}
             {% endfor %}

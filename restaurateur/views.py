@@ -7,8 +7,10 @@ from django.contrib.auth.decorators import user_passes_test
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
+from geopy import distance
 
 from foodcartapp.models import Product, Restaurant, Order, RestaurantMenuItem, OrderItem
+from restaurateur.utils import fetch_coordinates
 
 
 class Login(forms.Form):
@@ -96,7 +98,9 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
+    apikey = '79533e90-33d0-4074-ac4c-67969fb49f88'
     order_restaurants = {}
+    next_restaurant = {}
     restaurants = []
 
     order_items = Order.objects.annotate(
@@ -110,8 +114,15 @@ def view_orders(request):
 
         restaurants = list(
             filter(lambda restaurant: restaurants.count(restaurant) >= len(order.products.all()), restaurants))
-        order_restaurants[order.id] = list(set(restaurants))
+        order_coords = fetch_coordinates(apikey, order.address)
+
+        for restaurant in list(set(restaurants)):
+            restaurant_coords = fetch_coordinates(apikey, Restaurant.objects.get(name=restaurant).address)
+            next_restaurant[restaurant] = round(distance.distance(order_coords, restaurant_coords).km, 2)
+
+        order_restaurants[order.id] = sorted(next_restaurant.items(), key=lambda x: x[1])
         restaurants = []
+        next_restaurant = {}
 
     return render(request, template_name='order_items.html',
                   context={'order_items': order_items, 'order_restaurants': order_restaurants})
