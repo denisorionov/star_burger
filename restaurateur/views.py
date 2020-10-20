@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import user_passes_test
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
+from django.views.decorators.cache import cache_page
 from geopy import distance
 
 from foodcartapp.models import Product, Restaurant, Order, RestaurantMenuItem, OrderItem
@@ -96,6 +97,7 @@ def view_restaurants(request):
     })
 
 
+@cache_page(600, cache='default', key_prefix='')
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
     apikey = '79533e90-33d0-4074-ac4c-67969fb49f88'
