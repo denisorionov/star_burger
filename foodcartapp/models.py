@@ -1,6 +1,8 @@
+from django.core.cache import cache
+from django.db import models, transaction
 from django.utils import timezone
 
-from django.db import models, transaction
+from restaurateur.utils import fetch_coordinates, apikey
 
 
 class Restaurant(models.Model):
@@ -14,6 +16,15 @@ class Restaurant(models.Model):
     class Meta:
         verbose_name = 'ресторан'
         verbose_name_plural = 'рестораны'
+
+    def save(self, *args, **kwargs):
+        restaurant_coords = fetch_coordinates(apikey, self.address)
+        cache.set(self.name, restaurant_coords, timeout=None)
+        super(Restaurant, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        cache.delete(self.name)
+        super(Restaurant, self).delete(*args, **kwargs)
 
 
 class ProductQuerySet(models.QuerySet):
@@ -111,6 +122,15 @@ class Order(models.Model):
     class Meta:
         verbose_name = 'заказ'
         verbose_name_plural = 'заказы'
+
+    def save(self, *args, **kwargs):
+        order_coords = fetch_coordinates(apikey, self.address)
+        cache.set(self.address, order_coords, timeout=None)
+        super(Order, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        cache.delete(self.address)
+        super(Order, self).delete(*args, **kwargs)
 
 
 class OrderItem(models.Model):
