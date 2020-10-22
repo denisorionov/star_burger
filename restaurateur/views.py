@@ -1,17 +1,15 @@
 from django import forms
-from django.db.models import Sum, F, DecimalField
-from django.shortcuts import redirect, render
-from django.views import View
-from django.urls import reverse_lazy
-from django.contrib.auth.decorators import user_passes_test
-
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
-from django.views.decorators.cache import cache_page
+from django.contrib.auth.decorators import user_passes_test
+from django.core.cache import cache
+from django.db.models import Sum, F, DecimalField
+from django.shortcuts import redirect, render
+from django.urls import reverse_lazy
+from django.views import View
 from geopy import distance
 
 from foodcartapp.models import Product, Restaurant, Order, RestaurantMenuItem, OrderItem
-from restaurateur.utils import fetch_coordinates
 
 
 class Login(forms.Form):
@@ -97,10 +95,8 @@ def view_restaurants(request):
     })
 
 
-@cache_page(600, cache='default', key_prefix='')
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    apikey = '79533e90-33d0-4074-ac4c-67969fb49f88'
     order_restaurants = {}
     next_restaurant = {}
     restaurants = []
@@ -109,17 +105,21 @@ def view_orders(request):
         cost=Sum(F('products__price') * F('products__quantity'),
                  output_field=DecimalField(max_digits=9, decimal_places=2)))
 
-    for order in Order.objects.all():
-        for item in order.products.all():
-            for item_restaurant in RestaurantMenuItem.objects.filter(availability=True, product=item.product):
-                restaurants.append(item_restaurant.restaurant.name)
+    for order in order_items:
+        order_product_all = OrderItem.objects.select_related("product").filter(order=order)
+
+        for item in order_product_all:
+            product_restaurant = RestaurantMenuItem.objects.select_related("restaurant").filter(availability=True,
+                                                                                                product=item.product)
+            restaurants += [item_restaurant.restaurant.name for item_restaurant in product_restaurant]
 
         restaurants = list(
-            filter(lambda restaurant: restaurants.count(restaurant) >= len(order.products.all()), restaurants))
-        order_coords = fetch_coordinates(apikey, order.address)
+            filter(lambda restaurant: restaurants.count(restaurant) >= order_product_all.count(), restaurants))
+
+        order_coords = cache.get(order.address)
 
         for restaurant in list(set(restaurants)):
-            restaurant_coords = fetch_coordinates(apikey, Restaurant.objects.get(name=restaurant).address)
+            restaurant_coords = cache.get(restaurant)
             next_restaurant[restaurant] = round(distance.distance(order_coords, restaurant_coords).km, 2)
 
         order_restaurants[order.id] = sorted(next_restaurant.items(), key=lambda x: x[1])
