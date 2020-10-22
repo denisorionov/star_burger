@@ -26,6 +26,7 @@
     </tr>
 
     {% for item in order_items %}
+     {% if item.status == '0' %}
       <tr>
         <td>{{ item.id }}</td>
         <td>{{ item.get_status_display }}</td>
@@ -49,6 +50,7 @@
         </td>
         <td><a href="{% url 'admin:foodcartapp_order_change' item.id %}">редактировать</a></td>
       </tr>
+     {% endif %}
     {% endfor %}
    </table>
   </div>
