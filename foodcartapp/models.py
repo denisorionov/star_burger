@@ -80,7 +80,7 @@ class RestaurantMenuItem(models.Model):
 
 class OrderManager(models.Manager):
     @transaction.atomic
-    def create(self, firstname, lastname, address, phonenumber, products=False):
+    def create(self, firstname, lastname, address, phonenumber, products):
         order = Order(firstname=firstname, lastname=lastname, address=address, phonenumber=phonenumber)
         order.save()
         order_item = [OrderItem(order=order, price=0, **fields) for fields in products]
