@@ -9,6 +9,11 @@ class OrderItemSerializer(serializers.ModelSerializer):
         model = OrderItem
         fields = ['product', 'quantity']
 
+    def validate_quantity(self, value):
+        if value <= 0:
+            raise ValidationError("Количество не может быть равно нулю или быть отрицательным числом")
+        return value
+
 
 class OrderSerializer(serializers.ModelSerializer):
     products = OrderItemSerializer(many=True)
