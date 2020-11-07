@@ -63,18 +63,18 @@ def product_list_api(request):
 
 @api_view(['GET', 'POST'])
 def register_order(request):
-    if request.user.is_authenticated:
-        if request.method == 'GET':
-            order = Order.objects.all()
-            serializer_order = OrderSerializer(order, many=True)
-            return Response(serializer_order.data)
+    if request.method == 'GET':
+        if request.user.is_authenticated:
+            orders = Order.objects.all()
+            serializer_orders = OrderSerializer(orders, many=True)
+            return Response(serializer_orders.data)
+        return redirect("/manager/login/")
 
-        elif request.method == 'POST':
-            serializer = OrderSerializer(data=request.data)
+    elif request.method == 'POST':
+        serializer = OrderSerializer(data=request.data)
 
-            if serializer.is_valid():
-                serializer.create(serializer.validated_data)
+        if serializer.is_valid():
+            serializer.create(serializer.validated_data)
 
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    return redirect("/manager/login/")
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
