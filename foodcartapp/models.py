@@ -84,7 +84,6 @@ class OrderManager(models.Manager):
     def create(self, firstname, lastname, address, phonenumber, products):
         order = Order(firstname=firstname, lastname=lastname, address=address, phonenumber=phonenumber)
         order.save()
-        #order = super().create(firstname=firstname, lastname=lastname, address=address, phonenumber=phonenumber)
         order_item = [OrderItem(order=order, price=0, **fields) for fields in products]
         OrderItem.objects.bulk_create(order_item)
         for item in OrderItem.objects.filter(order=order):
