@@ -98,7 +98,7 @@ def view_restaurants(request):
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
     order_restaurants = {}
-    next_restaurant = {}
+    close_restaurants = {}
     restaurants = []
 
     order_items = Order.objects.annotate(
@@ -120,11 +120,11 @@ def view_orders(request):
 
         for restaurant in list(set(restaurants)):
             restaurant_coords = cache.get(restaurant)
-            next_restaurant[restaurant] = round(distance.distance(order_coords, restaurant_coords).km, 2)
+            close_restaurants[restaurant] = round(distance.distance(order_coords, restaurant_coords).km, 2)
 
-        order_restaurants[order.id] = sorted(next_restaurant.items(), key=lambda x: x[1])
+        order_restaurants[order.id] = sorted(close_restaurants.items(), key=lambda x: x[1])
         restaurants = []
-        next_restaurant = {}
+        close_restaurants = {}
 
     return render(request, template_name='order_items.html',
                   context={'order_items': order_items, 'order_restaurants': order_restaurants})
