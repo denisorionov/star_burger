@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+from django.shortcuts import redirect
 from django.templatetags.static import static
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -62,16 +63,18 @@ def product_list_api(request):
 
 @api_view(['GET', 'POST'])
 def register_order(request):
-    if request.method == 'GET':
-        order = Order.objects.all()
-        serializer_order = OrderSerializer(order, many=True)
-        return Response(serializer_order.data)
+    if request.user.is_authenticated:
+        if request.method == 'GET':
+            order = Order.objects.all()
+            serializer_order = OrderSerializer(order, many=True)
+            return Response(serializer_order.data)
 
-    elif request.method == 'POST':
-        serializer = OrderSerializer(data=request.data)
+        elif request.method == 'POST':
+            serializer = OrderSerializer(data=request.data)
 
-        if serializer.is_valid():
-            serializer.create(serializer.validated_data)
+            if serializer.is_valid():
+                serializer.create(serializer.validated_data)
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return redirect("/manager/login/")
