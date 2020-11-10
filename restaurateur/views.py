@@ -106,15 +106,15 @@ def view_orders(request):
                  output_field=DecimalField(max_digits=9, decimal_places=2)))
 
     for order in order_items:
-        order_product_all = OrderItem.objects.select_related("product").filter(order=order)
+        order_products = order.products.all().select_related("product")
 
-        for item in order_product_all:
+        for item in order_products:
             product_restaurant = RestaurantMenuItem.objects.select_related("restaurant").filter(availability=True,
                                                                                                 product=item.product)
             restaurants += [item_restaurant.restaurant.name for item_restaurant in product_restaurant]
 
         restaurants = list(
-            filter(lambda restaurant: restaurants.count(restaurant) >= order_product_all.count(), restaurants))
+            filter(lambda restaurant: restaurants.count(restaurant) >= order_products.count(), restaurants))
 
         order_coords = cache.get(order.address)
 
