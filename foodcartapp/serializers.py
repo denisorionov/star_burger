@@ -22,15 +22,6 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = ['id', 'products', 'firstname', 'lastname', 'phonenumber', 'address']
 
-    def create(self, validated_data):
-        return Order.objects.create(
-            firstname=validated_data['firstname'],
-            lastname=validated_data['lastname'],
-            phonenumber=validated_data['phonenumber'],
-            address=validated_data['address'],
-            products=validated_data['products']
-        )
-
     def validate_products(self, value):
         if not value:
             raise ValidationError("Это поле не может быть пустым.")
