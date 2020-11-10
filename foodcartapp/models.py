@@ -82,13 +82,9 @@ class RestaurantMenuItem(models.Model):
 class OrderManager(models.Manager):
     @transaction.atomic
     def create(self, firstname, lastname, address, phonenumber, products):
-        order = Order(firstname=firstname, lastname=lastname, address=address, phonenumber=phonenumber)
-        order.save()
-        order_item = [OrderItem(order=order, price=0, **fields) for fields in products]
+        order = super().create(firstname=firstname, lastname=lastname, address=address, phonenumber=phonenumber)
+        order_item = [OrderItem(order=order, price=fields['product'].price, **fields) for fields in products]
         OrderItem.objects.bulk_create(order_item)
-        for item in OrderItem.objects.filter(order=order):
-            item.price = item.product.price
-            item.save(update_fields=['price'])
         return order
 
 
