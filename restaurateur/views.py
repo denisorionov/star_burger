@@ -118,7 +118,7 @@ def view_orders(request):
 
         order_coords = cache.get(order.address)
 
-        for restaurant in list(set(restaurants)):
+        for restaurant in set(restaurants):
             restaurant_coords = cache.get(restaurant)
             close_restaurants[restaurant] = round(distance.distance(order_coords, restaurant_coords).km, 2)
 
