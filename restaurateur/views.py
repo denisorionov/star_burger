@@ -106,7 +106,7 @@ def view_orders(request):
                  output_field=DecimalField(max_digits=9, decimal_places=2)))
 
     for order in order_items:
-        order_products = order.products.all().select_related("product")
+        order_products = order.products.select_related("product")
 
         for item in order_products:
             product_restaurant = RestaurantMenuItem.objects.select_related("restaurant").filter(availability=True,
