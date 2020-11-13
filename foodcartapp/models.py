@@ -89,7 +89,7 @@ class OrderManager(models.Manager):
 
 
 class Order(models.Model):
-    STATUS = [
+    STATUS_CHOICES = [
         ('pending', 'необработанный'),
         ('processed', 'обработанный')
     ]
@@ -103,12 +103,13 @@ class Order(models.Model):
     lastname = models.CharField('фамилия', max_length=50, blank=True)
     address = models.CharField('адрес доставки', max_length=100)
     phonenumber = models.CharField('телефон', max_length=12)
-    status = models.CharField('статус заказа', max_length=10, default='pending', choices=STATUS, db_index=True)
+    status = models.CharField('статус заказа', max_length=10, default='pending', choices=STATUS_CHOICES, db_index=True)
     comment = models.TextField('комментарий к заказу', blank=True)
     registration_date = models.DateTimeField('дата регистарции', default=timezone.now, db_index=True)
     call_date = models.DateTimeField('дата звонка', blank=True, null=True)
     deliver_date = models.DateTimeField('дата доставки', blank=True, null=True)
-    payment_type = models.CharField('вид оплаты', max_length=10, default='electronic', choices=PAYMENT_TYPE, db_index=True)
+    payment_type = models.CharField('вид оплаты', max_length=10, default='electronic', choices=PAYMENT_TYPE,
+                                    db_index=True)
     restaurant = models.ForeignKey(Restaurant, null=True, blank=True, on_delete=models.SET_NULL,
                                    related_name='orders', verbose_name='ресторан')
     objects = OrderManager()
@@ -141,7 +142,7 @@ def validate_quantity(value):
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='products', verbose_name='заказ')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='products', verbose_name='товар')
-    price = models.DecimalField('цена', max_digits=8, decimal_places=2)
+    price = models.DecimalField('цена', max_digits=8, decimal_places=2, null=True)
     quantity = models.IntegerField('количество', validators=[validate_quantity])
 
     def __str__(self):
@@ -152,5 +153,6 @@ class OrderItem(models.Model):
         verbose_name_plural = 'состав заказа'
 
     def save(self, *args, **kwargs):
-        self.price = self.product.price
+        if not self.price:
+            self.price = self.product.price
         super(OrderItem, self).save(*args, **kwargs)
