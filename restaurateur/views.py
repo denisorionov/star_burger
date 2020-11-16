@@ -9,7 +9,8 @@ from django.urls import reverse_lazy
 from django.views import View
 from geopy import distance
 
-from foodcartapp.models import Product, Restaurant, Order, RestaurantMenuItem, OrderItem
+from foodcartapp.models import Product, Restaurant, Order, RestaurantMenuItem
+from restaurateur.utils import fetch_coordinates, apikey
 
 
 class Login(forms.Form):
@@ -117,9 +118,15 @@ def view_orders(request):
             filter(lambda restaurant: restaurants.count(restaurant) >= order_products.count(), restaurants))
 
         order_coords = cache.get(order.address)
+        if not order_coords:
+            order_coords = fetch_coordinates(apikey, order.address)
+            cache.set(order.address, order_coords, timeout=60)
 
         for restaurant in set(restaurants):
             restaurant_coords = cache.get(restaurant)
+            if not restaurant_coords:
+                restaurant_coords = fetch_coordinates(apikey, Restaurant.objects.get(name=restaurant).address)
+                cache.set(restaurant, restaurant_coords, timeout=1800)
             close_restaurants[restaurant] = round(distance.distance(order_coords, restaurant_coords).km, 2)
 
         order_restaurants[order.id] = sorted(close_restaurants.items(), key=lambda x: x[1])
