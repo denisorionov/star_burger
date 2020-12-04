@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from .models import Product, Order
+from .models import Product, Order, OrderItem
 from .serializers import OrderSerializer
 
 
@@ -36,7 +36,7 @@ def product_list_api(request):
     })
 
 
-@api_view(['GET', 'POST'])
+@api_view(['GET', 'POST', 'PUT'])
 def register_order(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
@@ -58,4 +58,20 @@ def register_order(request):
             )
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'PUT':
+        serializer = OrderSerializer(data=request.data)
+        if serializer.is_valid():
+            Order.objects.filter(pk=request.data['id']).update(
+                firstname=serializer.validated_data['firstname'],
+                lastname=serializer.validated_data['lastname'],
+                phonenumber=serializer.validated_data['phonenumber'],
+                address=serializer.validated_data['address']
+            )
+            order = Order.objects.get(pk=request.data['id'])
+            OrderItem.objects.filter(order=order).delete()
+            order_item = [OrderItem(order=order, price=fields['product'].price, **fields) for fields in serializer.validated_data['products']]
+            OrderItem.objects.bulk_create(order_item)
+            return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
