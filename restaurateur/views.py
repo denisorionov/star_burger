@@ -126,7 +126,7 @@ def view_orders(request):
             restaurant_coords = cache.get(restaurant)
             if not restaurant_coords:
                 restaurant_coords = fetch_coordinates(apikey, Restaurant.objects.get(name=restaurant).address)
-                cache.set(restaurant, restaurant_coords, timeout=1800)
+                cache.set(restaurant, restaurant_coords, timeout=None)
             close_restaurants[restaurant] = round(distance.distance(order_coords, restaurant_coords).km, 2)
 
         order_restaurants[order.id] = sorted(close_restaurants.items(), key=lambda x: x[1])
