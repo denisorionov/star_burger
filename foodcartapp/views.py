@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from django.shortcuts import redirect
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -71,7 +71,45 @@ def register_order(request):
             )
             order = Order.objects.get(pk=request.data['id'])
             OrderItem.objects.filter(order=order).delete()
-            order_item = [OrderItem(order=order, price=fields['product'].price, **fields) for fields in serializer.validated_data['products']]
+            order_item = [OrderItem(order=order, price=fields['product'].price, **fields) for fields in
+                          serializer.validated_data['products']]
             OrderItem.objects.bulk_create(order_item)
+
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def register_order_detail(request, pk):
+    try:
+        order = Order.objects.get(pk=pk)
+    except Order.DoesNotExist:
+        raise Http404
+
+    if request.user.is_authenticated:
+        if request.method == 'GET':
+            serializer_orders = OrderSerializer(order)
+            return Response(serializer_orders.data)
+
+        elif request.method == 'PUT':
+            serializer = OrderSerializer(data=request.data)
+            if serializer.is_valid():
+                Order.objects.filter(pk=pk).update(
+                    firstname=serializer.validated_data['firstname'],
+                    lastname=serializer.validated_data['lastname'],
+                    phonenumber=serializer.validated_data['phonenumber'],
+                    address=serializer.validated_data['address']
+                )
+                OrderItem.objects.filter(order=order).delete()
+                order_item = [OrderItem(order=order, price=fields['product'].price, **fields) for fields in
+                              serializer.validated_data['products']]
+                OrderItem.objects.bulk_create(order_item)
+
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        elif request.method == 'DELETE':
+            order.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+    return redirect("/manager/login/")
