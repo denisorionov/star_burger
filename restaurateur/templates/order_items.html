@@ -7,17 +7,25 @@
     <h2>Необработанные заказы</h2>
   </center>
 
+
+
+  <form method="post" action="" class="">
+    {% csrf_token %}
   <hr/>
   <br/>
   <br/>
   <div class="container">
+    {% if args.inf_edit %}
+  <p class="alert alert-info" role="alert">Заказ обновлен!</p>
+    {% endif %}
    <table class="table table-responsive">
     <tr>
       <th>ID заказа</th>
+      <th>Имя</th>
+      <th>Фамилия</th>
       <th>Статус заказа</th>
       <th>Способ оплаты</th>
       <th>Стоимость заказа</th>
-      <th>Клиент</th>
       <th>Телефон</th>
       <th>Адрес доставки</th>
       <th>Комментарий к заказу</th>
@@ -26,16 +34,20 @@
     </tr>
 
     {% for item in order_items %}
+     {{ orders_form.management_form }}
+     {% for form in orders_form %}
      {% if item.status == 'pending' %}
+     {% if item.id == form.instance.id %}
       <tr>
-        <td>{{ item.id }}</td>
-        <td>{{ item.get_status_display }}</td>
-        <td>{{ item.get_payment_type_display }}</td>
+        <td>{{ form.id }}</a></td>
+        <td>{{ form.firstname }}</td>
+        <td>{{ form.lastname }}</td>
+        <td>{{ form.status}}</td>
+        <td>{{ form.payment_type }}</td>
         <td>{{ item.cost }} руб.</td>
-        <td>{{ item.firstname }} {{ item.lastname }}</td>
-        <td>{{ item.phonenumber }}</td>
-        <td>{{ item.address }}</td>
-        <td>{{ item.comment }}</td>
+        <td>{{ form.phonenumber }}</td>
+        <td>{{ form.address }}</td>
+        <td>{{ form.comment }}</td>
         <td>
           <details>
             <summary>Развернуть</summary>
@@ -51,7 +63,12 @@
         <td><a href="{% url 'admin:foodcartapp_order_change' item.id %}">редактировать</a></td>
       </tr>
      {% endif %}
+     {% endif %}
+     {% endfor %}
     {% endfor %}
    </table>
+    <button type="submit" class="btn btn-default">Сохранить</button>
   </div>
+
+  </form>
 {% endblock %}

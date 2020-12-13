@@ -10,6 +10,7 @@ from django.views import View
 from geopy import distance
 
 from foodcartapp.models import Product, Restaurant, Order, RestaurantMenuItem
+from restaurateur.forms import OrderForm, OrderFormSet
 from restaurateur.utils import fetch_coordinates, apikey
 
 
@@ -98,6 +99,7 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
+    args = {'inf_edit': False}
     order_restaurants = {}
     close_restaurants = {}
     restaurants = []
@@ -133,5 +135,24 @@ def view_orders(request):
         restaurants = []
         close_restaurants = {}
 
+    if request.method == 'POST':
+        orders_form = OrderFormSet(request.POST)
+        for order_form in orders_form:
+            if order_form.is_valid():
+                orders_form.save()
+                args['inf_edit'] = True
+
+    orders_form = OrderFormSet(queryset=order_items)
+
     return render(request, template_name='order_items.html',
-                  context={'order_items': order_items, 'order_restaurants': order_restaurants})
+                  context={'order_items': order_items, 'order_restaurants': order_restaurants,
+                           'orders_form': orders_form, 'args': args})
+
+
+class OrderEditView(View):
+    def get(self, request, pk):
+        form = OrderForm(instance=Order.objects.get(id=pk))
+        return render(request, template_name='order_edit.html', context={'forms': form, 'id': pk})
+
+    def post(self, request):
+        pass

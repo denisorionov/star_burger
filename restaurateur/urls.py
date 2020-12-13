@@ -2,6 +2,7 @@ from django.urls import path
 from django.shortcuts import redirect
 
 from . import views
+from .views import OrderEditView
 
 app_name = "restaurateur"
 
@@ -14,6 +15,7 @@ urlpatterns = [
 
     # TODO заглушка для нереализованного функционала
     path('orders/', views.view_orders, name="view_orders"),
+    path('order/<int:pk>', OrderEditView.as_view(), name='order_edit'),
 
     path('login/', views.LoginView.as_view(), name="login"),
     path('logout/', views.LogoutView.as_view(), name="logout"),

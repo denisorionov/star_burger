@@ -84,7 +84,7 @@ class Order(models.Model):
 
     PAYMENT_TYPE = [
         ('electronic', 'электронно'),
-        ('cash', 'наличными при получении')
+        ('cash', 'наличными')
     ]
 
     firstname = models.CharField('имя', max_length=50)
