@@ -16,8 +16,19 @@
   <br/>
   <div class="container">
     {% if args.inf_edit %}
-  <p class="alert alert-info" role="alert">Заказ обновлен!</p>
+  <p class="alert alert-info" role="alert">Информация о заказе обновлена!</p>
     {% endif %}
+
+    {% if orders_form_errors %}
+    <div class="alert alert-danger" role="alert">
+    {% for errors in orders_form_errors %}
+    {% for key, value in errors.items %}
+    {{ value }}
+    {% endfor %}
+    {% endfor %}
+    </div>
+    {% endif %}
+
    <table class="table table-responsive">
     <tr>
       <th>ID заказа</th>

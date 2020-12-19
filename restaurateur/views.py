@@ -99,7 +99,7 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    args = {'inf_edit': False}
+    args = {'inf_edit': False, 'error': False}
     order_restaurants = {}
     close_restaurants = {}
     restaurants = []
@@ -137,13 +137,17 @@ def view_orders(request):
 
     if request.method == 'POST':
         orders_form = OrderFormSet(request.POST)
-        for order_form in orders_form:
-            if order_form.is_valid():
-                orders_form.save()
-                args['inf_edit'] = True
+        if orders_form.is_valid():
+            orders_form.save()
+            args['inf_edit'] = True
+        else:
+            orders_form_errors = orders_form.errors
+            orders_form = OrderFormSet()
+            return render(request, template_name='order_items.html',
+                          context={'order_items': order_items, 'order_restaurants': order_restaurants,
+                                   'orders_form': orders_form, 'orders_form_errors': orders_form_errors})
 
-    orders_form = OrderFormSet(queryset=order_items)
-
+    orders_form = OrderFormSet()
     return render(request, template_name='order_items.html',
                   context={'order_items': order_items, 'order_restaurants': order_restaurants,
                            'orders_form': orders_form, 'args': args})

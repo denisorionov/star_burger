@@ -21,14 +21,28 @@ class OrderForm(forms.ModelForm):
 
         widgets = {
             'id': forms.TextInput(attrs={'class': 'text', 'size': '1', 'readonly': 'readonly'}),
-            'firstname': forms.TextInput(attrs={'class': 'text', 'size': '4'}),
-            'lastname': forms.TextInput(attrs={'class': 'text', 'size': '4'}),
+            'firstname': forms.TextInput(attrs={'class': 'text', 'size': '4', 'required': True}),
+            'lastname': forms.TextInput(attrs={'class': 'text', 'size': '4', 'required': True}),
             'status': forms.Select(attrs={'class': "select"}, choices=STATUS_CHOICES),
-            'address': forms.TextInput(attrs={'class': 'text', 'size': '10'}),
-            'phonenumber': forms.TextInput(attrs={'class': 'text', 'size': '8'}),
+            'address': forms.TextInput(attrs={'class': 'text', 'size': '10', 'required': True}),
+            'phonenumber': forms.TextInput(attrs={'class': 'text', 'size': '8', 'required': True}),
             'comment': forms.TextInput(attrs={'class': 'text', 'size': '10'}),
             'payment_type': forms.Select(attrs={'class': 'select'}, choices=PAYMENT_TYPE),
         }
+
+    def clean_firstname(self):
+        firstname = self.cleaned_data.get('firstname')
+        if firstname.isalpha():
+            return firstname
+        else:
+            raise forms.ValidationError("Имя должно состоять только из букв")
+
+    def clean_lastname(self):
+        lastname = self.cleaned_data.get('lastname')
+        if lastname.isalpha():
+            return lastname
+        else:
+            raise forms.ValidationError("Фамилия должна состоять только из букв")
 
 
 OrderFormSet = modelformset_factory(Order, form=OrderForm, extra=0)
