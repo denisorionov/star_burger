@@ -56,9 +56,9 @@
         <td>{{ form.status}}</td>
         <td>{{ form.payment_type }}</td>
         <td>{{ item.cost }} руб.</td>
-        <td>{{ form.phonenumber }}</td>
+        <td>{{ form.phonenumber }}<sub>{{ form.phonenumber.help_text }}</sub></td>
         <td>{{ form.address }}</td>
-        <td>{{ form.comment }}</td>
+        <td>{{ form.comment }}<sub>{{ form.comment.help_text }}</sub></td>
         <td>
           <details>
             <summary>Развернуть</summary>

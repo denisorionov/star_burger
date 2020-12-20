@@ -19,6 +19,10 @@ class OrderForm(forms.ModelForm):
         model = Order
         fields = ['id', 'firstname', 'lastname', 'address', 'phonenumber', 'status', 'comment', 'payment_type']
 
+        help_texts = {
+            'phonenumber': 'e.g. +71234567890',
+        }
+
         widgets = {
             'id': forms.TextInput(attrs={'class': 'text', 'size': '1', 'readonly': 'readonly'}),
             'firstname': forms.TextInput(attrs={'class': 'text', 'size': '4', 'required': True}),
