@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.utils import timezone
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 class Restaurant(models.Model):
@@ -90,7 +91,7 @@ class Order(models.Model):
     firstname = models.CharField('имя', max_length=50)
     lastname = models.CharField('фамилия', max_length=50, blank=True)
     address = models.CharField('адрес доставки', max_length=100)
-    phonenumber = models.CharField('телефон', max_length=12)
+    phonenumber = PhoneNumberField('телефон', null=False, blank=False)
     status = models.CharField('статус заказа', max_length=10, default='pending', choices=STATUS_CHOICES, db_index=True)
     comment = models.TextField('комментарий к заказу', blank=True)
     registration_date = models.DateTimeField('дата регистарции', default=timezone.now, db_index=True)
